@@ -10,7 +10,8 @@ from .utils.asn1parser import ASN1Parser
 from .utils.cryptomath import *
 from .utils.keyfactory import _createPublicRSAKey
 from .utils.pem import *
-
+from ecdsa.keys import VerifyingKey
+from ecdsa.curves import NIST256p
 
 class X509(object):
     """
@@ -90,11 +91,13 @@ class X509(object):
 
         # first item of AlgorithmIdentifier is the algorithm
         alg = alg_identifier.getChild(0)
-        rsa_oid = alg.value
-        if list(rsa_oid) == [42, 134, 72, 134, 247, 13, 1, 1, 1]:
+        alg_oid = alg.value
+        if list(alg_oid) == [42, 134, 72, 134, 247, 13, 1, 1, 1]:
             self.certAlg = "rsa"
-        elif list(rsa_oid) == [42, 134, 72, 134, 247, 13, 1, 1, 10]:
+        elif list(alg_oid) == [42, 134, 72, 134, 247, 13, 1, 1, 10]:
             self.certAlg = "rsa-pss"
+        elif list(alg_oid) == [42, 134, 72, 206, 61, 2, 1]:
+            self.certAlg = "ecdsa"
         else:
             raise SyntaxError("Unrecognized AlgorithmIdentifier")
 
@@ -106,9 +109,21 @@ class X509(object):
             if params.value != bytearray(0):
                 raise SyntaxError("Unexpected non-NULL parameters in "
                                   "AlgorithmIdentifier")
+        elif self.certAlg == "ecdsa":
+            if alg_identifier_len != 2:
+                raise SyntaxError("Missing parameters in AlgorithmIdentifier")
+            curveId = alg_identifier.getChild(1)
+            if list(curveId.value) != [42, 134, 72, 206, 61, 3, 1, 7]:
+                raise SyntaxError("Unknown elliptic curve")
+
+            self._ecdsa_pubkey_parsing(subject_public_key_info, NIST256p)
+            return
         else:  # rsa-pss
             pass  # ignore parameters, if any - don't apply key restrictions
 
+        self._rsa_pubkey_parsing(subject_public_key_info)
+
+    def _rsa_pubkey_parsing(self, subject_public_key_info):
 
         # Get the subjectPublicKey
         subject_public_key = subject_public_key_info.getChild(1)
@@ -134,6 +149,12 @@ class X509(object):
         # Create a public key instance
         self.publicKey = _createPublicRSAKey(n, e, self.certAlg)
         # pylint: enable=invalid-name
+
+    def _ecdsa_pubkey_parsing(self, subjectPublicKeyInfoP, curve):
+        derPubKey = subjectPublicKeyInfoP.getChild(1).value
+        if derPubKey[:2] != b'\000\004':
+            raise SyntaxError("Unexpected public key encoding")
+        self.publicKey = VerifyingKey.from_string(derPubKey[2:], curve)
 
     def getFingerprint(self):
         """
