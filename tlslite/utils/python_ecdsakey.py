@@ -36,7 +36,7 @@ class Python_ECDSAKey(ECDSAKey):
         elif hAlg == "sha384":
             func = sha384
         else:
-            assert hAlg == "sha512"
+            assert hAlg == "sha512", hAlg
             func = sha512
 
         return self.private_key.\
