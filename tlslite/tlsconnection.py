@@ -1363,9 +1363,14 @@ class TLSConnection(TLSRecordLayer):
                                                 signature_scheme, None, None,
                                                 None, prfName, b'client')
 
-                pad_type = SignatureScheme.getPadding(scheme)
-                hash_name = SignatureScheme.getHash(scheme)
-                salt_len = getattr(hashlib, hash_name)().digest_size
+                if signature_scheme[1] == SignatureAlgorithm.ecdsa:
+                    pad_type = None
+                    hash_name = HashAlgorithm.toRepr(signature_scheme[0])
+                    salt_len = None
+                else:
+                    pad_type = SignatureScheme.getPadding(scheme)
+                    hash_name = SignatureScheme.getHash(scheme)
+                    salt_len = getattr(hashlib, hash_name)().digest_size
 
                 signature = privateKey.sign(signature_context,
                                             pad_type,
