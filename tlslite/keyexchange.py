@@ -145,6 +145,8 @@ class KeyExchange(object):
         :param sigHash: name of the signature hash to be used for signing
         """
         if self.serverHello.server_version < (3, 3):
+            if self.privateKey.key_type == "ecdsa":
+                serverKeyExchange.signAlg = SignatureAlgorithm.ecdsa
             hashBytes = serverKeyExchange.hash(self.clientHello.random,
                                                self.serverHello.random)
 

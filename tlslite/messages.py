@@ -1563,6 +1563,8 @@ class ServerKeyExchange(HandshakeMsg):
             else:
                 hashAlg = SignatureScheme.getHash(sigScheme)
             return secureHash(bytesToHash, hashAlg)
+        if self.signAlg == SignatureAlgorithm.ecdsa:
+            return SHA1(bytesToHash)
         return MD5(bytesToHash) + SHA1(bytesToHash)
 
 

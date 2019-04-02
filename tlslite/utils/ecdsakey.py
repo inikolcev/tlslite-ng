@@ -113,7 +113,7 @@ class ECDSAKey(object):
         hashBytes = secureHash(bytearray(bytes), hAlg)
         return self.verify(sigBytes, hashBytes, rsaScheme, hAlg, sLen)
 
-    def sign(self, bytes, padding=None, hashAlg=None, saltLen=None):
+    def sign(self, bytes, padding=None, hashAlg="sha1", saltLen=None):
         """Sign the passed-in bytes.
 
         This requires the key to have a private component.  It performs
