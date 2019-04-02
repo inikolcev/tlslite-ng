@@ -158,6 +158,9 @@ class X509(object):
         derPubKey = subjectPublicKeyInfoP.getChild(1).value
         if derPubKey[:2] != b'\000\004':
             raise SyntaxError("Unexpected public key encoding")
+        # this should create a tlslite.utils.ecdsakey.ECDSAKey object
+        # likely by calling _create_public_ecdsa_key like the above code
+        # for RSA
         self.publicKey = VerifyingKey.from_string(derPubKey[2:], curve)
 
     def getFingerprint(self):
