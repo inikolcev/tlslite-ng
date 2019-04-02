@@ -4,7 +4,7 @@ from .python_ecdsakey import Python_ECDSAKey
 from .pem import dePem, pemSniff
 from .asn1parser import ASN1Parser
 from .cryptomath import bytesToNumber
-from ecdsa.curves import NIST256p
+from ecdsa.curves import NIST256p, NIST384p, NIST521p
 from ecdsa.keys import SigningKey, VerifyingKey
 
 class Python_Key(object):
@@ -63,6 +63,10 @@ class Python_Key(object):
             curveID = alg_ident.getChild(1)
             if list(curveID.value) == [42, 134, 72, 206, 61, 3, 1, 7]:
                 curve = NIST256p
+            elif list(curveID.value) == [43, 129, 4, 0, 34]:
+                curve = NIST384p
+            elif list(curveID.value) == [43, 129, 4, 0, 35]:
+                curve = NIST521p
             else:
                 raise SyntaxError("Unknown curve")
         else:  # rsa-pss
@@ -114,13 +118,25 @@ class Python_Key(object):
         # first two bytes are the ASN.1 custom type and the length of payload
         # while the latter two bytes are just specification of the public
         # key encoding (uncompressed)
-        if list(public_key.value[:1]) != [3] or \
-                list(public_key.value[2:4]) != [0, 4]:
-            raise SyntaxError("Invalid or unsupported encoding of public key")
-        return Python_ECDSAKey(VerifyingKey.from_string(public_key.value[4:],
-                                                        curve),
-                               SigningKey.from_string(private_key.value,
-                                                      curve))
+        # TODO: use ecdsa lib to do this parsing
+        if curve is not NIST521p:
+            if list(public_key.value[:1]) != [3] or \
+                    list(public_key.value[2:4]) != [0, 4]:
+                raise SyntaxError("Invalid or unsupported encoding of public key")
+
+            return Python_ECDSAKey(VerifyingKey.from_string(public_key.value[4:],
+                                                            curve),
+                                   SigningKey.from_string(private_key.value,
+                                                          curve))
+        else:
+            if list(public_key.value[:3]) != [3, 129, 134] or \
+                    list(public_key.value[3:5]) != [0, 4]:
+                raise SyntaxError("Invalid or unsupported encoding of public key")
+
+            return Python_ECDSAKey(VerifyingKey.from_string(public_key.value[5:],
+                                                            curve),
+                                   SigningKey.from_string(private_key.value,
+                                                          curve))
 
     @staticmethod
     def _parse_asn1_private_key(private_key_parser, key_type):
