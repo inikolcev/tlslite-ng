@@ -255,7 +255,7 @@ class KeyExchange(object):
     @staticmethod
     def calcVerifyBytes(version, handshakeHashes, signatureAlg,
                         premasterSecret, clientRandom, serverRandom,
-                        prf_name = None, peer_tag=b'client'):
+                        prf_name = None, peer_tag=b'client', key_type="rsa"):
         """Calculate signed bytes for Certificate Verify"""
         if version == (3, 0):
             masterSecret = calcMasterSecret(version,
@@ -265,10 +265,9 @@ class KeyExchange(object):
                                             serverRandom)
             verifyBytes = handshakeHashes.digestSSL(masterSecret, b"")
         elif version in ((3, 1), (3, 2)):
-            if not signatureAlg:
+            if key_type != "ecdsa":
                 verifyBytes = handshakeHashes.digest()
             else:
-                assert signatureAlg[1] == SignatureAlgorithm.ecdsa
                 verifyBytes = handshakeHashes.digest("sha1")
         elif version == (3, 3):
             if signatureAlg[1] != SignatureAlgorithm.ecdsa:
@@ -336,7 +335,8 @@ class KeyExchange(object):
                                                   signatureAlgorithm,
                                                   premasterSecret,
                                                   clientRandom,
-                                                  serverRandom)
+                                                  serverRandom,
+                                                  privateKey.key_type)
         if signatureAlgorithm[1] == SignatureAlgorithm.ecdsa:
             padding = None
             hashName = HashAlgorithm.toRepr(signatureAlgorithm[0])

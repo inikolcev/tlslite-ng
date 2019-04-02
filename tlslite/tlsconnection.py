@@ -3759,7 +3759,8 @@ class TLSConnection(TLSRecordLayer):
                                                       signatureAlgorithm,
                                                       premasterSecret,
                                                       clientHello.random,
-                                                      serverHello.random)
+                                                      serverHello.random,
+                                                      key_type=clientCertChain.x509List[0].certAlg)
             publicKey = clientCertChain.getEndEntityPublicKey()
             if clientCertChain.x509List[0].certAlg != "ecdsa" and \
                     len(publicKey) < settings.minKeySize:
