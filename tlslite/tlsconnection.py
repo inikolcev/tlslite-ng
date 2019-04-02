@@ -39,6 +39,7 @@ from .keyexchange import KeyExchange, RSAKeyExchange, DHE_RSAKeyExchange, \
 from .handshakehelpers import HandshakeHelpers
 from .utils.cipherfactory import createAESGCM, createCHACHA20
 from ecdsa.util import sigdecode_der
+from ecdsa.keys import BadSignatureError
 
 class TLSConnection(TLSRecordLayer):
     """
@@ -2665,22 +2666,32 @@ class TLSConnection(TLSRecordLayer):
                                             signature_scheme, None, None, None,
                                             prf_name, b'client')
 
-            scheme = SignatureScheme.toRepr(signature_scheme)
-            pad_type = SignatureScheme.getPadding(scheme)
-            hash_name = SignatureScheme.getHash(scheme)
-            salt_len = getattr(hashlib, hash_name)().digest_size
-
             public_key = client_cert_chain.getEndEntityPublicKey()
 
-            if not public_key.verify(certificate_verify.signature,
-                                     signature_context,
-                                     pad_type,
-                                     hash_name,
-                                     salt_len):
-                for result in self._sendError(
-                        AlertDescription.decrypt_error,
-                        "signature verification failed"):
-                    yield result
+            if signature_scheme[1] == SignatureAlgorithm.ecdsa:
+                hash_name = HashAlgorithm.toRepr(signature_scheme[0])
+                if not public_key.verify_digest(certificate_verify.signature,
+                                                signature_context,
+                                                sigdecode_der):
+                    for result in self._sendError(
+                            AlertDescription.decrypt_error,
+                            "signature verification failed"):
+                        yield result
+            else:
+                scheme = SignatureScheme.toRepr(signature_scheme)
+                pad_type = SignatureScheme.getPadding(scheme)
+                hash_name = SignatureScheme.getHash(scheme)
+                salt_len = getattr(hashlib, hash_name)().digest_size
+
+                if not public_key.verify(certificate_verify.signature,
+                                         signature_context,
+                                         pad_type,
+                                         hash_name,
+                                         salt_len):
+                    for result in self._sendError(
+                            AlertDescription.decrypt_error,
+                            "signature verification failed"):
+                        yield result
 
         # as both exporter and resumption master secrets include handshake
         # transcript, we need to derive them early
@@ -3737,6 +3748,10 @@ class TLSConnection(TLSRecordLayer):
                             "Verify"):
                         yield result
                 signatureAlgorithm = certificateVerify.signatureAlgorithm
+            if not signatureAlgorithm and \
+                    clientCertChain.x509List[0].certAlg == "ecdsa":
+                signatureAlgorithm = (HashAlgorithm.sha1,
+                                      SignatureAlgorithm.ecdsa)
 
             cvhh = self._certificate_verify_handshake_hash
             verifyBytes = KeyExchange.calcVerifyBytes(self.version,
@@ -3746,40 +3761,57 @@ class TLSConnection(TLSRecordLayer):
                                                       clientHello.random,
                                                       serverHello.random)
             publicKey = clientCertChain.getEndEntityPublicKey()
-            if len(publicKey) < settings.minKeySize:
+            if clientCertChain.x509List[0].certAlg != "ecdsa" and \
+                    len(publicKey) < settings.minKeySize:
                 for result in self._sendError(\
                         AlertDescription.handshake_failure,
                         "Client's public key too small: %d" % len(publicKey)):
                     yield result
 
-            if len(publicKey) > settings.maxKeySize:
+            if clientCertChain.x509List[0].certAlg != "ecdsa" and \
+                    len(publicKey) > settings.maxKeySize:
                 for result in self._sendError(\
                         AlertDescription.handshake_failure,
                         "Client's public key too large: %d" % len(publicKey)):
                     yield result
 
-            scheme = SignatureScheme.toRepr(signatureAlgorithm)
-            # for pkcs1 signatures hash is used to add PKCS#1 prefix, but
-            # that was already done by calcVerifyBytes
-            hashName = None
-            saltLen = 0
-            if scheme is None:
-                padding = 'pkcs1'
-            else:
-                padding = SignatureScheme.getPadding(scheme)
-                if padding == 'pss':
-                    hashName = SignatureScheme.getHash(scheme)
-                    saltLen = getattr(hashlib, hashName)().digest_size
+            if signatureAlgorithm[1] != SignatureAlgorithm.ecdsa:
+                scheme = SignatureScheme.toRepr(signatureAlgorithm)
+                # for pkcs1 signatures hash is used to add PKCS#1 prefix, but
+                # that was already done by calcVerifyBytes
+                hashName = None
+                saltLen = 0
+                if scheme is None:
+                    padding = 'pkcs1'
+                else:
+                    padding = SignatureScheme.getPadding(scheme)
+                    if padding == 'pss':
+                        hashName = SignatureScheme.getHash(scheme)
+                        saltLen = getattr(hashlib, hashName)().digest_size
 
-            if not publicKey.verify(certificateVerify.signature,
-                                    verifyBytes,
-                                    padding,
-                                    hashName,
-                                    saltLen):
-                for result in self._sendError(\
-                        AlertDescription.decrypt_error,
-                        "Signature failed to verify"):
-                    yield result
+                if not publicKey.verify(certificateVerify.signature,
+                                        verifyBytes,
+                                        padding,
+                                        hashName,
+                                        saltLen):
+                    for result in self._sendError(
+                            AlertDescription.decrypt_error,
+                            "Signature failed to verify"):
+                        yield result
+            else:
+                hashName = HashAlgorithm.toStr(signatureAlgorithm[0])
+                verifyBytes = verifyBytes[:publicKey.curve.baselen]
+                try:
+                    if not publicKey.verify_digest(certificateVerify.signature,
+                                                   verifyBytes,
+                                                   sigdecode_der):
+                        raise BadSignatureError
+                except BadSignatureError:
+                    for result in self._sendError(
+                            AlertDescription.decode_error,
+                            "Signature failed to verify"):
+                        yield result
+
         yield (premasterSecret, clientCertChain)
 
 
