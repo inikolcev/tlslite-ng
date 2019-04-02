@@ -2554,22 +2554,32 @@ class TLSConnection(TLSRecordLayer):
                                             signature_scheme, None, None, None,
                                             prf_name, b'server')
 
-            padType = SignatureScheme.getPadding(scheme)
-            hashName = SignatureScheme.getHash(scheme)
-            saltLen = getattr(hashlib, hashName)().digest_size
+            if signature_scheme[1] == SignatureAlgorithm.ecdsa:
+                hashName = HashAlgorithm.toRepr(signature_scheme[0])
+                signature = privateKey.sign(signature_context, hashAlg=hashName)
+                if not privateKey.verify(signature, signature_context,
+                                         hashAlg=hashName):
+                    for result in self._sendError(
+                            AlertDescription.internal_error,
+                            "Certificate Verify signature failed"):
+                        yield result
+            else:
+                padType = SignatureScheme.getPadding(scheme)
+                hashName = SignatureScheme.getHash(scheme)
+                saltLen = getattr(hashlib, hashName)().digest_size
 
-            signature = privateKey.sign(signature_context,
-                                        padType,
-                                        hashName,
-                                        saltLen)
-            if not privateKey.verify(signature, signature_context,
-                                     padType,
-                                     hashName,
-                                     saltLen):
-                for result in self._sendError(
-                        AlertDescription.internal_error,
-                        "Certificate Verify signature failed"):
-                    yield result
+                signature = privateKey.sign(signature_context,
+                                            padType,
+                                            hashName,
+                                            saltLen)
+                if not privateKey.verify(signature, signature_context,
+                                         padType,
+                                         hashName,
+                                         saltLen):
+                    for result in self._sendError(
+                            AlertDescription.internal_error,
+                            "Certificate Verify signature failed"):
+                        yield result
             certificate_verify.create(signature, signature_scheme)
 
             self._queue_message(certificate_verify)
@@ -4003,8 +4013,10 @@ class TLSConnection(TLSRecordLayer):
                          version=(3, 3)):
         """Convert list of valid signature hashes to array of tuples"""
         certType = None
+        publicKey = None
         if certList:
             certType = certList.x509List[0].certAlg
+            publicKey = certList.x509List[0].publicKey
 
         sigAlgs = []
 
@@ -4015,12 +4027,13 @@ class TLSConnection(TLSRecordLayer):
                     continue
 
                 # in TLS 1.3 ECDSA key curve is bound to hash
-                if privateKey and version > (3, 3):
-                    if len(privateKey) == 256 and hashName != "sha256":
+                if publicKey and version > (3, 3):
+                    size = numBytes(publicKey.pubkey.order)
+                    if size == 32 and hashName != "sha256":
                         continue
-                    if len(privateKey) == 384 and hashName != "sha384":
+                    if size == 48 and hashName != "sha384":
                         continue
-                    if len(privateKey) == 521 and hashName != "sha512":
+                    if size == 65 and hashName != "sha512":
                         continue
 
                 sigAlgs.append((getattr(HashAlgorithm, hashName),
