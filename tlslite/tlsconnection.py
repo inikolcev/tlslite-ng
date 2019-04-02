@@ -38,6 +38,7 @@ from .keyexchange import KeyExchange, RSAKeyExchange, DHE_RSAKeyExchange, \
         AECDHKeyExchange, FFDHKeyExchange, ECDHKeyExchange
 from .handshakehelpers import HandshakeHelpers
 from .utils.cipherfactory import createAESGCM, createCHACHA20
+from ecdsa.util import sigdecode_der
 
 class TLSConnection(TLSRecordLayer):
     """
@@ -1260,21 +1261,34 @@ class TLSConnection(TLSRecordLayer):
                                                             None, None, None,
                                                             prfName, b'server')
 
-            scheme = SignatureScheme.toRepr(signature_scheme)
-            padType = SignatureScheme.getPadding(scheme)
-            hashName = SignatureScheme.getHash(scheme)
-            saltLen = getattr(hashlib, hashName)().digest_size
-
             publicKey = certificate.cert_chain.getEndEntityPublicKey()
+            if signature_scheme[1] == SignatureAlgorithm.ecdsa:
+                scheme = "ecdsa"
+                padType = None
+                hashName = HashAlgorithm.toRepr(signature_scheme[0])
+                saltLen = None
 
-            if not publicKey.verify(certificate_verify.signature,
-                                    signature_context,
-                                    padType,
-                                    hashName,
-                                    saltLen):
-                raise TLSDecryptionFailed("server Certificate Verify "
-                                          "signature "
-                                          "verification failed")
+                # TODO: use generic API
+                if not publicKey.verify_digest(certificate_verify.signature,
+                                        signature_context,
+                                        sigdecode_der):
+                    raise TLSDecryptionFailed("server Certificate Verify "
+                                              "signature verification "
+                                              "failed")
+            else:
+                scheme = SignatureScheme.toRepr(signature_scheme)
+                padType = SignatureScheme.getPadding(scheme)
+                hashName = SignatureScheme.getHash(scheme)
+                saltLen = getattr(hashlib, hashName)().digest_size
+
+                if not publicKey.verify(certificate_verify.signature,
+                                        signature_context,
+                                        padType,
+                                        hashName,
+                                        saltLen):
+                    raise TLSDecryptionFailed("server Certificate Verify "
+                                              "signature "
+                                              "verification failed")
 
         transcript_hash = self._handshake_hash.digest(prfName)
 
