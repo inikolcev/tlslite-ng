@@ -265,15 +265,24 @@ class KeyExchange(object):
                                             serverRandom)
             verifyBytes = handshakeHashes.digestSSL(masterSecret, b"")
         elif version in ((3, 1), (3, 2)):
-            verifyBytes = handshakeHashes.digest()
-        elif version == (3, 3):
-            scheme = SignatureScheme.toRepr(signatureAlg)
-            if scheme is None:
-                hashName = HashAlgorithm.toRepr(signatureAlg[0])
-                padding = 'pkcs1'
+            if not signatureAlg:
+                verifyBytes = handshakeHashes.digest()
             else:
-                hashName = SignatureScheme.getHash(scheme)
-                padding = SignatureScheme.getPadding(scheme)
+                assert signatureAlg[1] == SignatureAlgorithm.ecdsa
+                verifyBytes = handshakeHashes.digest("sha1")
+        elif version == (3, 3):
+            if signatureAlg[1] != SignatureAlgorithm.ecdsa:
+                scheme = SignatureScheme.toRepr(signatureAlg)
+                if scheme is None:
+                    hashName = HashAlgorithm.toRepr(signatureAlg[0])
+                    padding = 'pkcs1'
+                else:
+                    hashName = SignatureScheme.getHash(scheme)
+                    padding = SignatureScheme.getPadding(scheme)
+            else:
+                scheme = "ecdsa"
+                padding = None
+                hashName = HashAlgorithm.toRepr(signatureAlg[0])
             verifyBytes = handshakeHashes.digest(hashName)
             if padding == 'pkcs1':
                 verifyBytes = RSAKey.addPKCS1Prefix(verifyBytes, hashName)
@@ -314,6 +323,8 @@ class KeyExchange(object):
             SSLv3
         """
         signatureAlgorithm = None
+        if privateKey.key_type == "ecdsa" and version < (3, 3):
+            signatureAlgorithm = (HashAlgorithm.sha1, SignatureAlgorithm.ecdsa)
         # in TLS 1.2 we must decide which algorithm to use for signing
         if version == (3, 3):
             serverSigAlgs = certificateRequest.supported_signature_algs
@@ -326,23 +337,34 @@ class KeyExchange(object):
                                                   premasterSecret,
                                                   clientRandom,
                                                   serverRandom)
-        scheme = SignatureScheme.toRepr(signatureAlgorithm)
-        # for pkcs1 signatures hash is used to add PKCS#1 prefix, but
-        # that was already done by calcVerifyBytes
-        hashName = None
-        saltLen = 0
-        if scheme is None:
-            padding = 'pkcs1'
+        if signatureAlgorithm[1] == SignatureAlgorithm.ecdsa:
+            padding = None
+            hashName = HashAlgorithm.toRepr(signatureAlgorithm[0])
+            saltLen = None
+            verifyBytes = verifyBytes[:privateKey.private_key.curve.baselen]
+            # TODO use generic interface
+            signedBytes = privateKey.sign(verifyBytes,
+                                          padding,
+                                          hashName,
+                                          saltLen)
         else:
-            padding = SignatureScheme.getPadding(scheme)
-            if padding == 'pss':
-                hashName = SignatureScheme.getHash(scheme)
-                saltLen = getattr(hashlib, hashName)().digest_size
+            scheme = SignatureScheme.toRepr(signatureAlgorithm)
+            # for pkcs1 signatures hash is used to add PKCS#1 prefix, but
+            # that was already done by calcVerifyBytes
+            hashName = None
+            saltLen = 0
+            if scheme is None:
+                padding = 'pkcs1'
+            else:
+                padding = SignatureScheme.getPadding(scheme)
+                if padding == 'pss':
+                    hashName = SignatureScheme.getHash(scheme)
+                    saltLen = getattr(hashlib, hashName)().digest_size
 
-        signedBytes = privateKey.sign(verifyBytes,
-                                      padding,
-                                      hashName,
-                                      saltLen)
+            signedBytes = privateKey.sign(verifyBytes,
+                                          padding,
+                                          hashName,
+                                          saltLen)
         if not privateKey.verify(signedBytes, verifyBytes, padding, hashName,
                                  saltLen):
             raise TLSInternalError("Certificate Verify signature invalid")

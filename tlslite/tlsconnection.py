@@ -1584,6 +1584,7 @@ class TLSConnection(TLSRecordLayer):
 
             #abort if Certificate Request with inappropriate ciphersuite
             if cipherSuite not in CipherSuite.certAllSuites \
+                and cipherSuite not in CipherSuite.ecdheEcdsaSuites \
                 or cipherSuite in CipherSuite.srpAllSuites:
                 for result in self._sendError(\
                         AlertDescription.unexpected_message,
