@@ -8,7 +8,7 @@
 
 from .utils.asn1parser import ASN1Parser
 from .utils.cryptomath import *
-from .utils.keyfactory import _createPublicRSAKey
+from .utils.keyfactory import _createPublicRSAKey, _create_public_ecdsa_key
 from .utils.pem import *
 from ecdsa.keys import VerifyingKey
 from ecdsa.curves import NIST256p, NIST384p, NIST521p
@@ -158,10 +158,8 @@ class X509(object):
         derPubKey = subjectPublicKeyInfoP.getChild(1).value
         if derPubKey[:2] != b'\000\004':
             raise SyntaxError("Unexpected public key encoding")
-        # this should create a tlslite.utils.ecdsakey.ECDSAKey object
-        # likely by calling _create_public_ecdsa_key like the above code
-        # for RSA
-        self.publicKey = VerifyingKey.from_string(derPubKey[2:], curve)
+        public_key = VerifyingKey.from_string(derPubKey[2:], curve)
+        self.publicKey = _create_public_ecdsa_key(public_key)
 
     def getFingerprint(self):
         """

@@ -173,12 +173,14 @@ class KeyExchange(object):
 
         hashBytes = serverKeyExchange.hash(clientRandom, serverRandom)
 
-        hashBytes = hashBytes[:publicKey.curve.baselen]
+        hashBytes = hashBytes[:publicKey.public_key.curve.baselen]
 
         decode = ecdsa.util.sigdecode_der
 
-        if not publicKey.verify_digest(serverKeyExchange.signature, hashBytes,
-                                       decode):
+        if not publicKey.verify(serverKeyExchange.signature, hashBytes,
+                                padding=None,
+                                hashAlg=hashName,
+                                saltLen=None):
             raise TLSInternalError("signature validation failure")
 
     @staticmethod

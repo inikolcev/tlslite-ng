@@ -7,6 +7,7 @@ from .compat import *
 
 from .rsakey import RSAKey
 from .python_rsakey import Python_RSAKey
+from .python_ecdsakey import Python_ECDSAKey
 from tlslite.utils import cryptomath
 
 if cryptomath.m2cryptoLoaded:
@@ -193,3 +194,19 @@ def _createPrivateRSAKey(n, e, d, p, q, dP, dQ, qInv, key_type,
                                  key_type=key_type)
     raise ValueError("No acceptable implementations")
 # pylint: enable=invalid-name
+
+
+def _create_public_ecdsa_key(public_key, implementations=("python",)):
+    # public_key is expected to be python-ecdsa VerifyingKey object
+    for impl in implementations:
+        if impl == "python":
+            return Python_ECDSAKey(public_key)
+    raise ValueError("No acceptable implementation")
+
+
+def _create_private_ecdsa_key(private_key, implementations=("python",)):
+    # private key is expected to be python-ecdsa SigningKey object
+    for impl in implementations:
+        if impl == "python":
+            return Python_ECDSAKey(None, private_key)
+    raise ValueError("No acceptable implementation")

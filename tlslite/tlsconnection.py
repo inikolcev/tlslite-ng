@@ -1264,32 +1264,23 @@ class TLSConnection(TLSRecordLayer):
 
             publicKey = certificate.cert_chain.getEndEntityPublicKey()
             if signature_scheme[1] == SignatureAlgorithm.ecdsa:
-                scheme = "ecdsa"
                 padType = None
                 hashName = HashAlgorithm.toRepr(signature_scheme[0])
                 saltLen = None
-
-                # TODO: use generic API
-                if not publicKey.verify_digest(certificate_verify.signature,
-                                        signature_context,
-                                        sigdecode_der):
-                    raise TLSDecryptionFailed("server Certificate Verify "
-                                              "signature verification "
-                                              "failed")
             else:
                 scheme = SignatureScheme.toRepr(signature_scheme)
                 padType = SignatureScheme.getPadding(scheme)
                 hashName = SignatureScheme.getHash(scheme)
                 saltLen = getattr(hashlib, hashName)().digest_size
 
-                if not publicKey.verify(certificate_verify.signature,
-                                        signature_context,
-                                        padType,
-                                        hashName,
-                                        saltLen):
-                    raise TLSDecryptionFailed("server Certificate Verify "
-                                              "signature "
-                                              "verification failed")
+            if not publicKey.verify(certificate_verify.signature,
+                                    signature_context,
+                                    padType,
+                                    hashName,
+                                    saltLen):
+                raise TLSDecryptionFailed("server Certificate Verify "
+                                          "signature "
+                                          "verification failed")
 
         transcript_hash = self._handshake_hash.digest(prfName)
 
@@ -4067,7 +4058,9 @@ class TLSConnection(TLSRecordLayer):
 
                 # in TLS 1.3 ECDSA key curve is bound to hash
                 if publicKey and version > (3, 3):
-                    size = numBytes(publicKey.pubkey.order)
+                    size = len(publicKey)
+                    size, r = divmod(size, 8)
+                    size += int(bool(r))
                     if size == 32 and hashName != "sha256":
                         continue
                     if size == 48 and hashName != "sha384":
