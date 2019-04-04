@@ -1,7 +1,7 @@
 
 from .ecdsakey import ECDSAKey
 from ecdsa.util import sigencode_der, sigdecode_der
-from .tlshashlib import new, sha1, sha224, sha256, sha384, sha512
+from .tlshashlib import new, md5, sha1, sha224, sha256, sha384, sha512
 from .cryptomath import numBits
 
 class Python_ECDSAKey(ECDSAKey):
@@ -27,7 +27,9 @@ class Python_ECDSAKey(ECDSAKey):
         raise NotImplementedError()
 
     def _sign(self, data, hAlg):
-        if hAlg == "sha1":
+        if hAlg == "md5":
+            func = md5
+        elif hAlg == "sha1":
             func = sha1
         elif hAlg == "sha224":
             func = sha224
