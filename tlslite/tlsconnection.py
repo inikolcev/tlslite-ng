@@ -2663,28 +2663,23 @@ class TLSConnection(TLSRecordLayer):
 
             if signature_scheme[1] == SignatureAlgorithm.ecdsa:
                 hash_name = HashAlgorithm.toRepr(signature_scheme[0])
-                if not public_key.verify_digest(certificate_verify.signature,
-                                                signature_context,
-                                                sigdecode_der):
-                    for result in self._sendError(
-                            AlertDescription.decrypt_error,
-                            "signature verification failed"):
-                        yield result
+                pad_type = None
+                salt_len = None
             else:
                 scheme = SignatureScheme.toRepr(signature_scheme)
                 pad_type = SignatureScheme.getPadding(scheme)
                 hash_name = SignatureScheme.getHash(scheme)
                 salt_len = getattr(hashlib, hash_name)().digest_size
 
-                if not public_key.verify(certificate_verify.signature,
-                                         signature_context,
-                                         pad_type,
-                                         hash_name,
-                                         salt_len):
-                    for result in self._sendError(
-                            AlertDescription.decrypt_error,
-                            "signature verification failed"):
-                        yield result
+            if not public_key.verify(certificate_verify.signature,
+                                     signature_context,
+                                     pad_type,
+                                     hash_name,
+                                     salt_len):
+                for result in self._sendError(
+                        AlertDescription.decrypt_error,
+                        "signature verification failed"):
+                    yield result
 
         # as both exporter and resumption master secrets include handshake
         # transcript, we need to derive them early
