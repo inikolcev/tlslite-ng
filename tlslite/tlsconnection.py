@@ -2011,7 +2011,8 @@ class TLSConnection(TLSRecordLayer):
             nextProtos = None
 
         # If not doing a certificate-based suite, discard the TACK
-        if not cipherSuite in CipherSuite.certAllSuites:
+        if not cipherSuite in CipherSuite.certAllSuites and \
+                not cipherSuite in CipherSuite.ecdheEcdsaSuites:
             tacks = None
 
         # Prepare a TACK Extension if requested
@@ -2195,7 +2196,8 @@ class TLSConnection(TLSRecordLayer):
 
         #Create the session object
         self.session = Session()
-        if cipherSuite in CipherSuite.certAllSuites:        
+        if cipherSuite in CipherSuite.certAllSuites or \
+                cipherSuite in CipherSuite.ecdheEcdsaSuites:
             serverCertChain = cert_chain
         else:
             serverCertChain = None
