@@ -11,7 +11,7 @@ except ImportError:
     from unittest.mock import call
 
 from tlslite.x509 import X509
-from ecdsa.keys import VerifyingKey
+from tlslite.utils.python_ecdsakey import Python_ECDSAKey
 
 class TestX509(unittest.TestCase):
     def test_pem(self):
@@ -30,8 +30,8 @@ class TestX509(unittest.TestCase):
         x509.parse(data)
 
         self.assertIsNotNone(x509.publicKey)
-        self.assertIsInstance(x509.publicKey, VerifyingKey)
-        self.assertEqual(x509.publicKey.pubkey.point.x(),
+        self.assertIsInstance(x509.publicKey, Python_ECDSAKey)
+        self.assertEqual(x509.publicKey.public_key.pubkey.point.x(),
             90555129468518880658937518803653422065597446465131062487534800201457796212578)
-        self.assertEqual(x509.publicKey.pubkey.point.y(),
+        self.assertEqual(x509.publicKey.public_key.pubkey.point.y(),
             12490546948316647166662676770106859255378658810545502161335656899238893361610)
