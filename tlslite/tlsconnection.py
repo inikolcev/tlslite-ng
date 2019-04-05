@@ -3767,7 +3767,8 @@ class TLSConnection(TLSRecordLayer):
                         "Client's public key too large: %d" % len(publicKey)):
                     yield result
 
-            if signatureAlgorithm[1] != SignatureAlgorithm.ecdsa:
+            if not signatureAlgorithm or \
+                    signatureAlgorithm[1] != SignatureAlgorithm.ecdsa:
                 scheme = SignatureScheme.toRepr(signatureAlgorithm)
                 # for pkcs1 signatures hash is used to add PKCS#1 prefix, but
                 # that was already done by calcVerifyBytes

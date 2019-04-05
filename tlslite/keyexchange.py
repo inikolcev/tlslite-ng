@@ -339,7 +339,8 @@ class KeyExchange(object):
                                                   clientRandom,
                                                   serverRandom,
                                                   privateKey.key_type)
-        if signatureAlgorithm[1] == SignatureAlgorithm.ecdsa:
+        if signatureAlgorithm and \
+                signatureAlgorithm[1] == SignatureAlgorithm.ecdsa:
             padding = None
             hashName = HashAlgorithm.toRepr(signatureAlgorithm[0])
             saltLen = None
