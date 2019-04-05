@@ -80,6 +80,9 @@ class ClientCertificateType(TLSEnum):
     dss_sign = 2
     rsa_fixed_dh = 3
     dss_fixed_dh = 4
+    ecdsa_sign = 64  # RFC 8422
+    rsa_fixed_ecdh = 65  # RFC 8422
+    ecdsa_fixed_ecdh = 66  # RFC 8422
 
 
 class SSL2HandshakeType(TLSEnum):
