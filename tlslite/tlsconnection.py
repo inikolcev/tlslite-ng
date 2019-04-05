@@ -3651,7 +3651,8 @@ class TLSConnection(TLSRecordLayer):
             if not reqCAs:
                 reqCAs = []
             valid_sig_algs = self._sigHashesToList(settings)
-            certificateRequest.create([ClientCertificateType.rsa_sign],
+            certificateRequest.create([ClientCertificateType.rsa_sign,
+                                       ClientCertificateType.ecdsa_sign],
                                       reqCAs,
                                       valid_sig_algs)
             msgs.append(certificateRequest)
