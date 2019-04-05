@@ -3169,6 +3169,8 @@ class TLSConnection(TLSRecordLayer):
         cipherSuites = CipherSuite.filterForVersion(cipherSuites,
                                                     minVersion=version,
                                                     maxVersion=version)
+        cipherSuites = CipherSuite.filter_for_certificate(cipherSuites,
+                                                          cert_chain)
         #If resumption was requested and we have a session cache...
         if clientHello.session_id and sessionCache:
             session = None
