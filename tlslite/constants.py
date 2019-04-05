@@ -783,7 +783,7 @@ class CipherSuite:
 
     #: 3DES CBC ciphers
     tripleDESSuites = []
-    tripleDESSuites.append(TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA)  # unsupp
+    tripleDESSuites.append(TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA)
     tripleDESSuites.append(TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA)  # unsupported
     tripleDESSuites.append(TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA)  # unsupported
     tripleDESSuites.append(TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA)
@@ -804,8 +804,8 @@ class CipherSuite:
     aes128Suites.append(TLS_RSA_WITH_AES_128_CBC_SHA256)
     aes128Suites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA256)
     aes128Suites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA256)
-    aes128Suites.append(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256)  # unsupp
-    aes128Suites.append(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA)  # unsupported
+    aes128Suites.append(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256)
+    aes128Suites.append(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA)
     aes128Suites.append(TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256)  # unsupported
     aes128Suites.append(TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA)  # unsupported
     aes128Suites.append(TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256)  # unsupported
@@ -824,8 +824,8 @@ class CipherSuite:
     aes256Suites.append(TLS_RSA_WITH_AES_256_CBC_SHA256)
     aes256Suites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA256)
     aes256Suites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA256)
-    aes256Suites.append(TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384)  # unsupported
-    aes256Suites.append(TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)  # unsupported
+    aes256Suites.append(TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384)
+    aes256Suites.append(TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
     aes256Suites.append(TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384)  # unsupported
     aes256Suites.append(TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA)  # unsupported
     aes256Suites.append(TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384)  # unsupported
@@ -839,7 +839,7 @@ class CipherSuite:
     aes128GcmSuites.append(TLS_RSA_WITH_AES_128_GCM_SHA256)
     aes128GcmSuites.append(TLS_DHE_RSA_WITH_AES_128_GCM_SHA256)
     aes128GcmSuites.append(TLS_DH_ANON_WITH_AES_128_GCM_SHA256)
-    aes128GcmSuites.append(TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256)  # unsupp
+    aes128GcmSuites.append(TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256)
     aes128GcmSuites.append(TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256)  # unsupp
     aes128GcmSuites.append(TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256)  # unsupp
     aes128GcmSuites.append(TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256)
@@ -850,7 +850,7 @@ class CipherSuite:
     aes256GcmSuites.append(TLS_RSA_WITH_AES_256_GCM_SHA384)
     aes256GcmSuites.append(TLS_DHE_RSA_WITH_AES_256_GCM_SHA384)
     aes256GcmSuites.append(TLS_DH_ANON_WITH_AES_256_GCM_SHA384)
-    aes256GcmSuites.append(TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384)  # unsupp
+    aes256GcmSuites.append(TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384)
     aes256GcmSuites.append(TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384)  # unsupp
     aes256GcmSuites.append(TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384)  # unsupported
     aes256GcmSuites.append(TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384)
@@ -870,7 +870,7 @@ class CipherSuite:
     #: RC4 128 stream cipher
     rc4Suites = []
     rc4Suites.append(TLS_ECDHE_RSA_WITH_RC4_128_SHA)
-    rc4Suites.append(TLS_ECDHE_ECDSA_WITH_RC4_128_SHA)  # unsupported
+    rc4Suites.append(TLS_ECDHE_ECDSA_WITH_RC4_128_SHA)
     rc4Suites.append(TLS_ECDH_ECDSA_WITH_RC4_128_SHA)  # unsupported
     rc4Suites.append(TLS_ECDH_RSA_WITH_RC4_128_SHA)  # unsupported
     rc4Suites.append(TLS_DH_ANON_WITH_RC4_128_MD5)
@@ -883,7 +883,7 @@ class CipherSuite:
     nullSuites.append(TLS_RSA_WITH_NULL_MD5)
     nullSuites.append(TLS_RSA_WITH_NULL_SHA)
     nullSuites.append(TLS_RSA_WITH_NULL_SHA256)
-    nullSuites.append(TLS_ECDHE_ECDSA_WITH_NULL_SHA)  # unsupported
+    nullSuites.append(TLS_ECDHE_ECDSA_WITH_NULL_SHA)
     nullSuites.append(TLS_ECDH_ECDSA_WITH_NULL_SHA)  # unsupported
     nullSuites.append(TLS_ECDH_RSA_WITH_NULL_SHA)  # unsupported
     nullSuites.append(TLS_ECDHE_RSA_WITH_NULL_SHA)
@@ -908,11 +908,11 @@ class CipherSuite:
     shaSuites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
     shaSuites.append(TLS_DH_ANON_WITH_3DES_EDE_CBC_SHA)
     shaSuites.append(TLS_RSA_WITH_NULL_SHA)
-    shaSuites.append(TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)  # unsupported
-    shaSuites.append(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA)  # unsupported
-    shaSuites.append(TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA)  # unsupported
-    shaSuites.append(TLS_ECDHE_ECDSA_WITH_RC4_128_SHA)  # unsupported
-    shaSuites.append(TLS_ECDHE_ECDSA_WITH_NULL_SHA)  # unsupported
+    shaSuites.append(TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
+    shaSuites.append(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA)
+    shaSuites.append(TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA)
+    shaSuites.append(TLS_ECDHE_ECDSA_WITH_RC4_128_SHA)
+    shaSuites.append(TLS_ECDHE_ECDSA_WITH_NULL_SHA)
     shaSuites.append(TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA)  # unsupported
     shaSuites.append(TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA)  # unsupported
     shaSuites.append(TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA)  # unsupported
@@ -943,14 +943,14 @@ class CipherSuite:
     sha256Suites.append(TLS_RSA_WITH_NULL_SHA256)
     sha256Suites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA256)
     sha256Suites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA256)
-    sha256Suites.append(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256)  # unsupported
+    sha256Suites.append(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256)
     sha256Suites.append(TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256)  # unsupported
     sha256Suites.append(TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256)  # unsupported
     sha256Suites.append(TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256)
 
     #: SHA-384 HMAC, SHA-384 PRF
     sha384Suites = []
-    sha384Suites.append(TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384)  # unsupported
+    sha384Suites.append(TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384)
     sha384Suites.append(TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384)  # unsupported
     sha384Suites.append(TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384)  # unsupported
     sha384Suites.append(TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384)
@@ -1012,6 +1012,28 @@ class CipherSuite:
             includeSuites.update(CipherSuite.tls12Suites)
         if maxVersion > (3, 3):
             includeSuites.update(CipherSuite.tls13Suites)
+        return [s for s in suites if s in includeSuites]
+
+    @staticmethod
+    def filter_for_certificate(suites, cert_chain):
+        """Return a copy of suites without ciphers incompatible with the cert.
+        """
+        includeSuites = set([])
+        includeSuites.update(CipherSuite.tls13Suites)
+        if cert_chain:
+            if cert_chain.x509List[0].certAlg in ("rsa", "rsa-pss"):
+                includeSuites.update(CipherSuite.certAllSuites)
+            if cert_chain.x509List[0].certAlg == "rsa-pss":
+                # suites in which RSA encryption is used can't be used with
+                # rsa-pss
+                includeSuites.symmetric_difference_update(
+                    CipherSuite.certSuites)
+            if cert_chain.x509List[0].certAlg == "ecdsa":
+                includeSuites.update(CipherSuite.ecdheEcdsaSuites)
+        else:
+            includeSuites.update(CipherSuite.srpSuites)
+            includeSuites.update(CipherSuite.anonSuites)
+            includeSuites.update(CipherSuite.ecdhAnonSuites)
         return [s for s in suites if s in includeSuites]
 
     @staticmethod
