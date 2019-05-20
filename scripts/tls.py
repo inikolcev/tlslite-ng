@@ -363,7 +363,12 @@ def clientCmd(argv):
             connection.handshakeClientCert(cert_chain, privateKey,
                 settings=settings, serverName=address[0], alpn=alpn)
         stop = time_stamp()
-        print("Handshake success")        
+        print("Handshake success")
+        if privateKey:
+            def pha_handshake(cert_req):
+                print("Performing post-handshake authentication")
+                return cert_chain, privateKey
+            connection.pha_callback = pha_handshake
     except TLSLocalAlert as a:
         if a.description == AlertDescription.user_canceled:
             print(str(a))

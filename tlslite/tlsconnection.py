@@ -86,6 +86,8 @@ class TLSConnection(TLSRecordLayer):
         # if and how big is the limit on records peer is willing to accept
         # used only for TLS 1.2 and earlier
         self._peer_record_size_limit = None
+        # HandshakeSettings preserved for post-handshake authentication
+        self._settings = None
 
     def keyingMaterialExporter(self, label, length=20):
         """Return keying material as described in RFC 5705
@@ -718,6 +720,13 @@ class TLSConnection(TLSRecordLayer):
         session_id = bytearray()
         # when TLS 1.3 advertised, add key shares, set fake session_id
         if next((i for i in settings.versions if i > (3, 3)), None):
+            # if we have a client cert configured, do indicate we're willing
+            # to perform Post Handshake Authentication
+            if certParams and certParams[1]:
+                extensions.append(TLSExtension(
+                    extType=ExtensionType.post_handshake_auth).
+                    create(bytearray(b'')))
+
             session_id = getRandomBytes(32)
             extensions.append(SupportedVersionsExtension().
                               create(settings.versions))
@@ -1421,6 +1430,8 @@ class TLSConnection(TLSRecordLayer):
 
         # fully switch to application data
         self._changeWriteState()
+
+        self._first_handshake_hashes = self._handshake_hash.copy()
 
         resumption_master_secret = derive_secret(secret,
                                                  bytearray(b'res master'),
