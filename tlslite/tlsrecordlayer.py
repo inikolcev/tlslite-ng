@@ -1270,7 +1270,15 @@ class TLSRecordLayer(object):
         if self.closed:
             raise TLSClosedConnectionError(
                 "attempt to write to closed connection")
+        if self.version != (3, 4):
+            raise TLSIllegalParameterException("KeyUpdate is a TLS 1.3 specific"
+                                               " feature")
 
         keyupdate_request = KeyUpdate().create(message_type)
         for result in self._sendMsg(keyupdate_request):
             yield result
+        self.session.cl_app_secret, self.session.sr_app_secret = \
+            self._recordLayer.calcTLS1_3KeyUpdate_reciever(
+                    self.session.cipherSuite,
+                    self.session.cl_app_secret,
+                    self.session.sr_app_secret)
