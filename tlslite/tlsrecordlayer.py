@@ -1179,3 +1179,8 @@ class TLSRecordLayer(object):
         keyupdate_request = KeyUpdate().create(message_type)
         for result in self._sendMsg(keyupdate_request):
             yield result
+        self.session.cl_app_secret, self.session.sr_app_secret = \
+            self._recordLayer.calcTLS1_3KeyUpdate_reciever(
+                    self.session.cipherSuite,
+                    self.session.cl_app_secret,
+                    self.session.sr_app_secret)
